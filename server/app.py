@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
-from models import db, User, bcrypt
+from models import db, User, Task, bcrypt
 from config import Config
 import os
 from datetime import datetime, timedelta
@@ -133,6 +133,32 @@ def user_by_id(id):
         db.session.delete(user)
         db.session.commit()
         return '', 204
+
+# Task routes
+@app.route('/tasks', methods=['GET', 'POST'])
+@jwt_required()
+def tasks():
+    if request.method == 'GET':
+        tasks = Task.query.all()
+        return jsonify([task.to_dict() for task in tasks])
+    
+    elif request.method == 'POST':
+        data = request.get_json()
+        try:
+            task = Task(
+                title=data['title'],
+                description=data.get('description', ''),
+                status=data.get('status', 'pending'),
+                priority=data.get('priority', 'medium'),
+                user_id=data['user_id'],
+                project_id=data.get('project_id'),
+                due_date=datetime.fromisoformat(data['due_date']) if data.get('due_date') else None
+            )
+            db.session.add(task)
+            db.session.commit()
+            return jsonify(task.to_dict()), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
