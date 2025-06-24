@@ -127,6 +127,7 @@ def user_by_id(id):
             db.session.commit()
             return jsonify(user.to_dict())
         except Exception as e:
+            db.session.rollback()
             return jsonify({'error': str(e)}), 400
     
     elif request.method == 'DELETE':
@@ -158,6 +159,7 @@ def tasks():
             db.session.commit()
             return jsonify(task.to_dict()), 201
         except Exception as e:
+            db.session.rollback()
             return jsonify({'error': str(e)}), 400
 
 @app.route('/tasks/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
@@ -180,6 +182,7 @@ def task_by_id(id):
             db.session.commit()
             return jsonify(task.to_dict())
         except Exception as e:
+            db.session.rollback()
             return jsonify({'error': str(e)}), 400
     
     elif request.method == 'DELETE':
@@ -207,6 +210,7 @@ def projects():
             db.session.commit()
             return jsonify(project.to_dict()), 201
         except Exception as e:
+            db.session.rollback()
             return jsonify({'error': str(e)}), 400
 
 @app.route('/projects/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
@@ -227,6 +231,7 @@ def project_by_id(id):
             db.session.commit()
             return jsonify(project.to_dict())
         except Exception as e:
+            db.session.rollback()
             return jsonify({'error': str(e)}), 400
     
     elif request.method == 'DELETE':
@@ -254,6 +259,7 @@ def project_collaborators():
             db.session.commit()
             return jsonify(collaborator.to_dict()), 201
         except Exception as e:
+            db.session.rollback()
             return jsonify({'error': str(e)}), 400
 
 @app.route('/project-collaborators/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
@@ -274,6 +280,7 @@ def project_collaborator_by_id(id):
             db.session.commit()
             return jsonify(collaborator.to_dict())
         except Exception as e:
+            db.session.rollback()
             return jsonify({'error': str(e)}), 400
     
     elif request.method == 'DELETE':
