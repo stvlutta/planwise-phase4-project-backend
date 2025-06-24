@@ -49,4 +49,20 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('user_id', 'project_id', name='unique_user_project')
     )
+
+    op.create_table('tasks',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('title', sa.String(length=200), nullable=False),
+        sa.Column('description', sa.Text(), nullable=True),
+        sa.Column('status', sa.String(length=20), nullable=True),
+        sa.Column('priority', sa.String(length=10), nullable=True),
+        sa.Column('due_date', sa.DateTime(), nullable=True),
+        sa.Column('user_id', sa.Integer(), nullable=False),
+        sa.Column('project_id', sa.Integer(), nullable=True),
+        sa.Column('created_at', sa.DateTime(), nullable=True),
+        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(['project_id'], ['projects.id'], ),
+        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+        sa.PrimaryKeyConstraint('id')
+    )
     # ### end Alembic commands ###
