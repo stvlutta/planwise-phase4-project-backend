@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: planwise-backend
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn --bind 0.0.0.0:$PORT app:app"
+    plan: free
+
+databases:
+  - name: planwise-db
+    databaseName: planwise
+    user: planwise

@@ -18,15 +18,15 @@ if database_url and database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 
-# Create tables
-with app.app_context():
-    db.create_all()
-
 db.init_app(app)
 bcrypt.init_app(app)
 jwt = JWTManager(app)
 migrate = Migrate(app, db)
 CORS(app, origins=app.config['CORS_ORIGINS'])
+
+# Create tables
+with app.app_context():
+    db.create_all()
 
 # Authentication routes
 @app.route('/auth/signup', methods=['POST'])
