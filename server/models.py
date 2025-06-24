@@ -93,3 +93,7 @@ class ProjectCollaborator(db.Model, SerializerMixin):
     
     def __repr__(self):
         return f'<ProjectCollaborator {self.user.username} - {self.project.title} ({self.role})>'
+    
+    @property
+    def updated_at(self):
+        return self.created_at
