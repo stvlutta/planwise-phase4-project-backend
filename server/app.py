@@ -256,5 +256,30 @@ def project_collaborators():
         except Exception as e:
             return jsonify({'error': str(e)}), 400
 
+@app.route('/project-collaborators/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
+@jwt_required()
+def project_collaborator_by_id(id):
+    collaborator = ProjectCollaborator.query.get_or_404(id)
+    
+    if request.method == 'GET':
+        return jsonify(collaborator.to_dict())
+    
+    elif request.method == 'PATCH':
+        data = request.get_json()
+        try:
+            for key, value in data.items():
+                if hasattr(collaborator, key):
+                    setattr(collaborator, key, value)
+            collaborator.updated_at = datetime.utcnow()
+            db.session.commit()
+            return jsonify(collaborator.to_dict())
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    
+    elif request.method == 'DELETE':
+        db.session.delete(collaborator)
+        db.session.commit()
+        return '', 204
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
