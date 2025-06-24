@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
-from models import db, User, Task, bcrypt
+from models import db, User, Task, Project, bcrypt
 from config import Config
 import os
 from datetime import datetime, timedelta
@@ -186,6 +186,28 @@ def task_by_id(id):
         db.session.delete(task)
         db.session.commit()
         return '', 204
+
+# Project routes
+@app.route('/projects', methods=['GET', 'POST'])
+@jwt_required()
+def projects():
+    if request.method == 'GET':
+        projects = Project.query.all()
+        return jsonify([project.to_dict() for project in projects])
+    
+    elif request.method == 'POST':
+        data = request.get_json()
+        try:
+            project = Project(
+                title=data['title'],
+                description=data.get('description', ''),
+                owner_id=data['owner_id']
+            )
+            db.session.add(project)
+            db.session.commit()
+            return jsonify(project.to_dict()), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
