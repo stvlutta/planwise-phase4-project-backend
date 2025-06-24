@@ -160,5 +160,32 @@ def tasks():
         except Exception as e:
             return jsonify({'error': str(e)}), 400
 
+@app.route('/tasks/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
+@jwt_required()
+def task_by_id(id):
+    task = Task.query.get_or_404(id)
+    
+    if request.method == 'GET':
+        return jsonify(task.to_dict())
+    
+    elif request.method == 'PATCH':
+        data = request.get_json()
+        try:
+            for key, value in data.items():
+                if key == 'due_date' and value:
+                    setattr(task, key, datetime.fromisoformat(value))
+                elif hasattr(task, key):
+                    setattr(task, key, value)
+            task.updated_at = datetime.utcnow()
+            db.session.commit()
+            return jsonify(task.to_dict())
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    
+    elif request.method == 'DELETE':
+        db.session.delete(task)
+        db.session.commit()
+        return '', 204
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
