@@ -5,7 +5,7 @@ from flask_jwt_extended import JWTManager, jwt_required, create_access_token, ge
 from models import db, User, bcrypt
 from config import Config
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -101,6 +101,38 @@ def get_current_user():
         return jsonify({'error': 'User not found'}), 404
     
     return jsonify({'user': user.to_dict()}), 200
+
+# User routes
+@app.route('/users', methods=['GET'])
+@jwt_required()
+def users():
+    users = User.query.all()
+    return jsonify([user.to_dict() for user in users])
+
+@app.route('/users/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
+@jwt_required()
+def user_by_id(id):
+    user = User.query.get_or_404(id)
+    
+    if request.method == 'GET':
+        return jsonify(user.to_dict())
+    
+    elif request.method == 'PATCH':
+        data = request.get_json()
+        try:
+            for key, value in data.items():
+                if hasattr(user, key):
+                    setattr(user, key, value)
+            user.updated_at = datetime.utcnow()
+            db.session.commit()
+            return jsonify(user.to_dict())
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    
+    elif request.method == 'DELETE':
+        db.session.delete(user)
+        db.session.commit()
+        return '', 204
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
