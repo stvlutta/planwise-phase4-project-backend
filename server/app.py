@@ -209,5 +209,30 @@ def projects():
         except Exception as e:
             return jsonify({'error': str(e)}), 400
 
+@app.route('/projects/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
+@jwt_required()
+def project_by_id(id):
+    project = Project.query.get_or_404(id)
+    
+    if request.method == 'GET':
+        return jsonify(project.to_dict())
+    
+    elif request.method == 'PATCH':
+        data = request.get_json()
+        try:
+            for key, value in data.items():
+                if hasattr(project, key):
+                    setattr(project, key, value)
+            project.updated_at = datetime.utcnow()
+            db.session.commit()
+            return jsonify(project.to_dict())
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    
+    elif request.method == 'DELETE':
+        db.session.delete(project)
+        db.session.commit()
+        return '', 204
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
