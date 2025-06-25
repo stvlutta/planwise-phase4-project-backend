@@ -18,7 +18,7 @@ services:
       - key: FLASK_ENV
         value: production
       - key: FRONTEND_URL
-        value: https://planwise-phase4-project-frontend.vercel.app
+        value: https://planwise-phase4-project-frontend-1gav9443w.vercel.app
 
 databases:
   - name: planwise-db
