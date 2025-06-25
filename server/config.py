@@ -13,7 +13,7 @@ class Config:
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-string'
     
     # CORS Configuration
-    CORS_ORIGINS = os.environ.get('FRONTEND_URL', 'http://localhost:3000').split(',')
+    CORS_ORIGINS = os.environ.get('FRONTEND_URL', 'https://planwise-phase4-project-frontend.vercel.app').split(',')
     
     # Flask Configuration
     ENV = os.environ.get('FLASK_ENV', 'production')
