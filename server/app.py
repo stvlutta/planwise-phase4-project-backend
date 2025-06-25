@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_migrate import Migrate
+# Temporarily remove Flask-Migrate to avoid SQLAlchemy compatibility issues
+# from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
 from models import db, User, Task, Project, ProjectCollaborator, bcrypt
 from config import Config
@@ -21,7 +22,8 @@ if database_url and database_url.startswith('postgres://'):
 db.init_app(app)
 bcrypt.init_app(app)
 jwt = JWTManager(app)
-migrate = Migrate(app, db)
+# Temporarily remove migrate
+# migrate = Migrate(app, db)
 CORS(app, origins=app.config['CORS_ORIGINS'])
 
 # Create tables (only if tables don't exist)
@@ -32,6 +34,15 @@ with app.app_context():
     except Exception as e:
         print(f"Database initialization error: {e}")
         # Don't fail if tables already exist
+
+# Health check routes
+@app.route('/', methods=['GET'])
+def health_check():
+    return jsonify({'message': 'PlanWise Backend API is running!', 'status': 'healthy'}), 200
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'healthy'}), 200
 
 # Authentication routes
 @app.route('/auth/signup', methods=['POST'])
