@@ -26,7 +26,7 @@ jwt = JWTManager(app)
 # migrate = Migrate(app, db)
 CORS(app, origins=app.config['CORS_ORIGINS'])
 
-# Create tables (only if tables don't exist)
+# Initialize database tables for serverless deployment
 with app.app_context():
     try:
         db.create_all()
