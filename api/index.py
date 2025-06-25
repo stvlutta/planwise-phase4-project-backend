@@ -1,13 +1,22 @@
-import sys
-import os
+from flask import Flask, jsonify
 
-# Add the server directory to the Python path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'server'))
+app = Flask(__name__)
 
-from app import app
+@app.route('/')
+def health_check():
+    return jsonify({'message': 'PlanWise Backend API is running on Vercel!', 'status': 'healthy'})
 
-# Export the app for Vercel
-application = app
+@app.route('/health')
+def health():
+    return jsonify({'status': 'healthy'})
 
-if __name__ == "__main__":
+@app.route('/test')
+def test():
+    return jsonify({'message': 'Test endpoint working!'})
+
+# Vercel entry point
+def handler(request):
+    return app(request)
+
+if __name__ == '__main__':
     app.run(debug=True)

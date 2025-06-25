@@ -27,13 +27,21 @@ jwt = JWTManager(app)
 CORS(app, origins=app.config['CORS_ORIGINS'])
 
 # Initialize database tables for serverless deployment
-with app.app_context():
-    try:
-        db.create_all()
-        print("Database tables created successfully")
-    except Exception as e:
-        print(f"Database initialization error: {e}")
-        # Don't fail if tables already exist
+def init_db():
+    with app.app_context():
+        try:
+            db.create_all()
+            print("Database tables created successfully")
+            return True
+        except Exception as e:
+            print(f"Database initialization error: {e}")
+            return False
+
+# Initialize database for serverless deployment
+try:
+    init_db()
+except Exception as e:
+    print(f"Database initialization failed: {e}")
 
 # Health check routes
 @app.route('/', methods=['GET'])
@@ -304,6 +312,8 @@ def project_collaborator_by_id(id):
         db.session.commit()
         return '', 204
 
+
+# For local development
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5555))
     app.run(host='0.0.0.0', port=port, debug=False)
