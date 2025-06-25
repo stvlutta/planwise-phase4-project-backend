@@ -24,9 +24,14 @@ jwt = JWTManager(app)
 migrate = Migrate(app, db)
 CORS(app, origins=app.config['CORS_ORIGINS'])
 
-# Create tables
+# Create tables (only if tables don't exist)
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+        # Don't fail if tables already exist
 
 # Authentication routes
 @app.route('/auth/signup', methods=['POST'])
