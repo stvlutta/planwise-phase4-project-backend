@@ -163,8 +163,11 @@ def user_by_id(id):
 @app.route('/tasks', methods=['GET', 'POST'])
 @jwt_required()
 def tasks():
+    current_user_id = int(get_jwt_identity())
+    
     if request.method == 'GET':
-        tasks = Task.query.all()
+        # Get tasks assigned to current user
+        tasks = Task.query.filter_by(user_id=current_user_id).all()
         return jsonify([task.to_dict() for task in tasks])
     
     elif request.method == 'POST':
@@ -175,7 +178,7 @@ def tasks():
                 description=data.get('description', ''),
                 status=data.get('status', 'pending'),
                 priority=data.get('priority', 'medium'),
-                user_id=data['user_id'],
+                user_id=current_user_id,  # Assign to current user
                 project_id=data.get('project_id'),
                 due_date=datetime.fromisoformat(data['due_date']) if data.get('due_date') else None
             )
@@ -189,7 +192,12 @@ def tasks():
 @app.route('/tasks/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
 @jwt_required()
 def task_by_id(id):
+    current_user_id = int(get_jwt_identity())
     task = Task.query.get_or_404(id)
+    
+    # Check if user owns this task
+    if task.user_id != current_user_id:
+        return jsonify({'error': 'Access denied'}), 403
     
     if request.method == 'GET':
         return jsonify(task.to_dict())
@@ -218,9 +226,16 @@ def task_by_id(id):
 @app.route('/projects', methods=['GET', 'POST'])
 @jwt_required()
 def projects():
+    current_user_id = int(get_jwt_identity())
+    
     if request.method == 'GET':
-        projects = Project.query.all()
-        return jsonify([project.to_dict() for project in projects])
+        # Get projects owned by current user or where they are a collaborator
+        owned_projects = Project.query.filter_by(owner_id=current_user_id).all()
+        collaborated_projects = Project.query.join(ProjectCollaborator).filter_by(user_id=current_user_id).all()
+        
+        # Combine and remove duplicates
+        all_projects = list(set(owned_projects + collaborated_projects))
+        return jsonify([project.to_dict() for project in all_projects])
     
     elif request.method == 'POST':
         data = request.get_json()
@@ -228,7 +243,7 @@ def projects():
             project = Project(
                 title=data['title'],
                 description=data.get('description', ''),
-                owner_id=data['owner_id']
+                owner_id=current_user_id  # Use current user as owner
             )
             db.session.add(project)
             db.session.commit()
@@ -240,7 +255,15 @@ def projects():
 @app.route('/projects/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
 @jwt_required()
 def project_by_id(id):
+    current_user_id = int(get_jwt_identity())
     project = Project.query.get_or_404(id)
+    
+    # Check if user has access to this project (owner or collaborator)
+    is_owner = project.owner_id == current_user_id
+    is_collaborator = ProjectCollaborator.query.filter_by(user_id=current_user_id, project_id=id).first() is not None
+    
+    if not (is_owner or is_collaborator):
+        return jsonify({'error': 'Access denied'}), 403
     
     if request.method == 'GET':
         return jsonify(project.to_dict())
