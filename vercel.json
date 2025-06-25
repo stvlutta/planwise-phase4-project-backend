@@ -14,10 +14,5 @@
   ],
   "env": {
     "PYTHONPATH": "server"
-  },
-  "functions": {
-    "api/index.py": {
-      "maxDuration": 10
-    }
   }
 }
