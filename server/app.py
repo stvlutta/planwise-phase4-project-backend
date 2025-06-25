@@ -24,7 +24,7 @@ bcrypt.init_app(app)
 jwt = JWTManager(app)
 # Temporarily remove migrate
 # migrate = Migrate(app, db)
-CORS(app, origins=app.config['https://planwise-phase4-project-frontend.vercel.app'])
+CORS(app, origins=app.config['CORS_ORIGINS'])
 
 # Create tables (only if tables don't exist)
 with app.app_context():
